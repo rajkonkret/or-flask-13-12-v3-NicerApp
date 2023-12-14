@@ -1,3 +1,5 @@
+{% from "macros.html" import show_flash_message, show_all_flash_message %}
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -8,6 +10,8 @@
   </head>
   <body>
   {% include "menu.html" %}
+  {{ show_all_flash_message() }}
+
 
     {% block navbar %} {% endblock %}
     {% block content %} {% endblock %}
