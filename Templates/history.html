@@ -5,6 +5,7 @@ Transaction's history
 {% endblock %}
 
 {% block content %}
+
 <!-- Modal -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -25,8 +26,8 @@ Transaction's history
         </div>
     </div>
 </div>
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
 
 <script>
     $(document).ready(function () {
@@ -63,7 +64,7 @@ Transaction's history
                 <a href="{{ url_for('delete_transaction',transaction_id=transaction.id )}}"
                    class="btn btn-danger btn-sm" role="button">Delete...</a>
                 <a type="button" class="btn btn-danger btn-sm delete-confirm"
-                   data-bs-toggle="modal" data-bs-target="#exampleModal"
+                   data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
                    data-desc="{{ 'Delete transaction for  {} {} ({})'.format(transaction.amount,
                              transaction.currency,
                              transaction.trans_date) }}"
