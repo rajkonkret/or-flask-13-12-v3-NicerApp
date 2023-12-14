@@ -90,6 +90,11 @@ def exchange():
         return render_template('exchange_results.html', currency=currency, amount=amount,
                                currency_info=offer.get_by_code(currency))
 
+@app.route('/history')
+def history():
+    db = get_db()
+    sql_command = 'select id, currency, amount, trans_date from transactions;'
+
 
 if __name__ == '__main__':
     app.run(debug=True)
