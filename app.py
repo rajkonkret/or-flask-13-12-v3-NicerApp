@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, url_for, request
+from flask import Flask, render_template, flash, request
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'SomthingWhatNoICanGuess'
