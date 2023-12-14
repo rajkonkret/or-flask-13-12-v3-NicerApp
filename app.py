@@ -1,7 +1,26 @@
-from flask import Flask, render_template, flash, request
+from flask import Flask, render_template, flash, request, g
+import sqlite3
 
+app_info = {
+    'db_file': 'data/cantor.db'
+}
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'SomthingWhatNoICanGuess'
+
+
+def get_db():
+    if not hasattr(g, 'sqlite_db'):
+        conn = sqlite3.connect(app_info['db_file'])
+        conn.row_factory = sqlite3.Row
+        g.sqlite_db = conn
+    return g.sqlite_db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
+        print(error)
 
 
 class Currency:
@@ -48,6 +67,10 @@ def exchange():
         return render_template('exchange.html', offer=offer)
     else:
         flash("Debug mode")
+        amount = 100
+        if 'amount' in request.form:
+            amount = request.form['amount']
+
         currency = 'EUR'
         if 'currency' in request.form:
             currency = request.form['currency']
@@ -57,11 +80,12 @@ def exchange():
         elif offer.get_by_code(currency) == 'unknown':
             flash(f"the selected currency is unknown and cannot be accepted")
         else:
+            db = get_db()
+            # sql_command = "insert into transactions(currency, amount, user) values('USD',300,'admin');"
+            sql_command = "insert into transactions(currency, amount, user) values(?,?,?)"
+            db.execute(sql_command, [currency, amount, 'admin'])
+            db.commit()
             flash(f"Request to chchange {currency} was accepted")
-
-        amount = 100
-        if 'amount' in request.form:
-            amount = request.form['amount']
 
         return render_template('exchange_results.html', currency=currency, amount=amount,
                                currency_info=offer.get_by_code(currency))
