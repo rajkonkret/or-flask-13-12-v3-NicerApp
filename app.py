@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, g
+from flask import Flask, render_template, flash, request, g, redirect, url_for
 import sqlite3
 
 app_info = {
@@ -55,7 +55,7 @@ class CantorOffer:
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template("index.html", active_menu="home")
 
 
 @app.route('/exchange', methods=['GET', 'POST'])
@@ -64,7 +64,7 @@ def exchange():
     offer.load_offer()
 
     if request.method == 'GET':
-        return render_template('exchange.html', offer=offer)
+        return render_template('exchange.html', active_menu="exchange", offer=offer)
     else:
         flash("Debug mode")
         amount = 100
@@ -87,7 +87,7 @@ def exchange():
             db.commit()
             flash(f"Request to chchange {currency} was accepted")
 
-        return render_template('exchange_results.html', currency=currency, amount=amount,
+        return render_template('exchange_results.html', active_menu="exchange", currency=currency, amount=amount,
                                currency_info=offer.get_by_code(currency))
 
 
@@ -98,7 +98,17 @@ def history():
     cur = db.execute(sql_command)
     transactions = cur.fetchall()
 
-    return render_template('history.html', transactions=transactions)
+    return render_template('history.html', active_menu="history", transactions=transactions)
+
+
+@app.route('/delete_transaction/<int:transaction_id>')
+def delete_transaction(transaction_id):
+    db = get_db()
+    sql_statement = 'delete from transactions where id = ?;'
+    db.execute(sql_statement, [transaction_id])
+    db.commit()
+
+    return redirect(url_for('history'))
 
 
 if __name__ == '__main__':
