@@ -1,4 +1,5 @@
-from flask import Flask, render_template, flash, request, g, redirect, url_for
+from sqlite3.dbapi2 import SQLITE_TRANSACTION
+from flask import Flask, render_template, flash, request, g, redirect, url_for, session
 import sqlite3
 from datetime import date
 
@@ -86,6 +87,19 @@ class UserPass:
         password_characters = string.ascii_letters
         random_password = ''.join(random.choice(password_characters) for i in range(3))
         self.password = random_password
+
+    def login_user(self):
+        db = get_db()
+        sql_statement = 'select id, name, email, is_active, is_admin from users where name=?'
+        cur = db.execute(sql_statement, [self.user])
+        user_record = cur.fetchone()
+
+        if user_record != None and self.verify_password(user_record['password'], self.password):
+            return user_record
+        else:
+            self.user = None
+            self.password = None
+            return None
 
 
 @app.route('/init_app')
