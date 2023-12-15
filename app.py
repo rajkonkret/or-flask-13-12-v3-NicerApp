@@ -59,6 +59,27 @@ class CantorOffer:
         return Currency('unknown', 'unknown', 'flag_pirat.png')
 
 
+class UserPass:
+
+    def __init__(self, user='', password=''):
+        self.user = user
+        self.password = password
+
+    def hash_password(self):
+        os_urandom_static = b'c}:\x9b\x11\x94\xb9B+\x14\x93\x16ZM_y\x15\xfee\xb3\xb5\xad$X\x82\xba\xecM\x87\xd7\xb5\xc0/m\x8b\n\xc04=\x10`\xc4\xba-\x08!\x98\x91.\xe0\xa9\xee|\xed\xc2\x86\x90\xb5}\x97'
+        salt = hashlib.sha256(os_urandom_static).hexdigest().encode('ascii')
+        pwdhash = hashlib.pbkdf2_hmac('sha512', self.password.encode('utf-8'), salt, 100000)
+        pwdhash = binascii.hexlify(pwdhash)
+        return (salt + pwdhash).decode('ascii')
+
+    def verify_password(self, stored_password, provided_password):
+        salt = stored_password[:64]
+        stored_password = stored_password[64:]
+        pwdhash = hashlib.pbkdf2_hmac('sha512', provided_password.encode('utf-8'), salt, 100000)
+        pwdhash = binascii.hexlify(pwdhash)
+        return pwdhash == stored_password
+
+
 @app.route('/')
 def index():
     return render_template("index.html", active_menu="home")
