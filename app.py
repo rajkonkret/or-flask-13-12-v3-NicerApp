@@ -2,6 +2,11 @@ from flask import Flask, render_template, flash, request, g, redirect, url_for
 import sqlite3
 from datetime import date
 
+import random
+import string
+import hashlib
+import binascii
+
 app_info = {
     'db_file': 'data/cantor.db'
 }
