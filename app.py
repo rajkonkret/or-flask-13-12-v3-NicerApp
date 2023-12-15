@@ -1,5 +1,6 @@
 from flask import Flask, render_template, flash, request, g, redirect, url_for
 import sqlite3
+from datetime import datetime
 
 app_info = {
     'db_file': 'data/cantor.db'
@@ -110,6 +111,24 @@ def delete_transaction(transaction_id):
 
     return redirect(url_for('history'))
 
+
+@app.route('/edit_transaction/<int:transaction_id>')
+def edit_transaction(transaction_id):
+    offer = CantorOffer()
+    offer.load_offer()
+    db = get_db()
+
+    if request.method == 'GET':
+        sql_statement = "select id, currency, amount from transactions where id=?;"
+        cur = db.execute(sql_statement, [transaction_id])
+        transaction = cur.fetchone()
+
+        if transaction == None:
+            flash('No such transaction!')
+            return redirect(url_for('history'))
+
+        return render_template('exchange.html', active_menu="exchange", offer=offer)
+    else:
 
 if __name__ == '__main__':
     app.run(debug=True)
