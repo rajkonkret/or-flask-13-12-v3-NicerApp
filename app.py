@@ -76,8 +76,8 @@ class UserPass:
     def verify_password(self, stored_password, provided_password):
         salt = stored_password[:64]
         stored_password = stored_password[64:]
-        pwdhash = hashlib.pbkdf2_hmac('sha512', provided_password.encode('utf-8'), salt, 100000)
-        pwdhash = binascii.hexlify(pwdhash)
+        pwdhash = hashlib.pbkdf2_hmac('sha512', provided_password.encode('utf-8'), salt.encode('utf-8'), 100000)
+        pwdhash = binascii.hexlify(pwdhash).decode('ascii')
         return pwdhash == stored_password
 
     def get_random_user_password(self):
@@ -90,9 +90,10 @@ class UserPass:
 
     def login_user(self):
         db = get_db()
-        sql_statement = 'select id, name, email, is_active, is_admin from users where name=?'
+        sql_statement = 'select id, name, email, password, is_active, is_admin from users where name=?'
         cur = db.execute(sql_statement, [self.user])
         user_record = cur.fetchone()
+        print(user_record.keys())
 
         if user_record != None and self.verify_password(user_record['password'], self.password):
             return user_record
@@ -100,6 +101,27 @@ class UserPass:
             self.user = None
             self.password = None
             return None
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html', active_menu='home')
+    else:
+        user_name = '' if 'user_name' not in request.form else request.form['user_name']
+        user_pass = '' if 'user_pass' not in request.form else request.form['user_pass']
+        print(user_pass)
+
+        login = UserPass(user_name, user_pass)
+        login_record = login.login_user()
+
+        if login_record != None:
+            session['user'] = user_name
+            flash("Login succesfull, welcome {}".format(user_name))
+            return redirect(url_for('index'))
+        else:
+            flash("Logon failed, try again")
+            return render_template('login.html')
 
 
 @app.route('/init_app')
