@@ -12,7 +12,7 @@
             <div class="col-4">
                  <select id="currency" name="currency" class="form-select">
                     {% for currency in offer.currencies %}
-                        <option value="{{ currency.code }}">{{ currency.name }}</option>
+                        <option value="{{ currency.code }}" {{ 'selected' if transaction.currency==currency.code }}>{{ currency.name }}</option>
                     {% endfor %}
                  </select><br>
             </div>
@@ -20,7 +20,7 @@
         <div class="row justify_content-start">
             <div class="col-1 col-form-label"><label for="amount">Amount</label></div>
             <div class="col-4">
-                 <input type="text" id="amount" name="amount" value="100" class="form-control"><br>
+                 <input type="text" id="amount" name="amount" value="{{ transaction.amount }}" class="form-control"><br>
             </div>
         </div>
         <div class="row justify_content-start">

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, flash, request, g, redirect, url_for
 import sqlite3
-from datetime import datetime
+from datetime import date
 
 app_info = {
     'db_file': 'data/cantor.db'
@@ -112,7 +112,7 @@ def delete_transaction(transaction_id):
     return redirect(url_for('history'))
 
 
-@app.route('/edit_transaction/<int:transaction_id>')
+@app.route('/edit_transaction/<int:transaction_id>', methods=['GET', 'POST'])
 def edit_transaction(transaction_id):
     offer = CantorOffer()
     offer.load_offer()
@@ -129,9 +129,6 @@ def edit_transaction(transaction_id):
         else:
             return render_template('edit_transaction.html', transaction=transaction,
                                    active_menu="history", offer=offer)
-
-
-
     else:
         flash("Debug mode")
         amount = 100
@@ -147,15 +144,18 @@ def edit_transaction(transaction_id):
         elif offer.get_by_code(currency) == 'unknown':
             flash(f"the selected currency is unknown and cannot be accepted")
         else:
-            db = get_db()
-            # sql_command = "insert into transactions(currency, amount, user) values('USD',300,'admin');"
-            sql_command = "insert into transactions(currency, amount, user) values(?,?,?)"
-            db.execute(sql_command, [currency, amount, 'admin'])
-            db.commit()
-            flash(f"Request to chchange {currency} was accepted")
 
-        return render_template('exchange_results.html', active_menu="exchange", currency=currency, amount=amount,
-                               currency_info=offer.get_by_code(currency))
+            sql_command = '''update transactions set
+                    currency=?,
+                    amount=?,
+                    user=?,
+                    trans_date=?
+                where id=?'''
+            db.execute(sql_command, [currency, amount, 'admin', date.today(), transaction_id])
+            db.commit()
+            flash(f"Transaction was updated")
+
+        return redirect(url_for('history'))
 
 
 if __name__ == '__main__':
