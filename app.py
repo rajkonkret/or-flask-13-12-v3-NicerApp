@@ -126,9 +126,37 @@ def edit_transaction(transaction_id):
         if transaction == None:
             flash('No such transaction!')
             return redirect(url_for('history'))
+        else:
+            return render_template('edit_transaction.html', transaction=transaction,
+                                   active_menu="history", offer=offer)
 
-        return render_template('exchange.html', active_menu="exchange", offer=offer)
+
+
     else:
+        flash("Debug mode")
+        amount = 100
+        if 'amount' in request.form:
+            amount = request.form['amount']
+
+        currency = 'EUR'
+        if 'currency' in request.form:
+            currency = request.form['currency']
+
+        if currency in offer.denied_codes:
+            flash(f"The currency {currency} cannot be accepted")
+        elif offer.get_by_code(currency) == 'unknown':
+            flash(f"the selected currency is unknown and cannot be accepted")
+        else:
+            db = get_db()
+            # sql_command = "insert into transactions(currency, amount, user) values('USD',300,'admin');"
+            sql_command = "insert into transactions(currency, amount, user) values(?,?,?)"
+            db.execute(sql_command, [currency, amount, 'admin'])
+            db.commit()
+            flash(f"Request to chchange {currency} was accepted")
+
+        return render_template('exchange_results.html', active_menu="exchange", currency=currency, amount=amount,
+                               currency_info=offer.get_by_code(currency))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
