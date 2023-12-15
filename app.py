@@ -139,7 +139,6 @@ def users():
 
 @app.route('/new_user', methods=['GET', 'POST'])
 def new_user():
-
     if not 'user' in session:
         return redirect(url_for('login'))
 
@@ -156,8 +155,39 @@ def new_user():
         user['email'] = '' if not 'email' in request.form else request.form['email']
         user['user_pass'] = '' if not 'user_pass' in request.form else request.form['user_pass']
 
+        cursor = db.execute('select count(*) as cnt from users where name=?',
+                            [user['user_name']])
+        record = cursor.fetchone()
+        is_user_name_unique = (record['cnt'] == 0)
 
-    return "not implemented"
+        cursor = db.execute('select count(*) as cnt from users where email=?',
+                            [user['email']])
+        record = cursor.fetchone()
+        is_user_email_unique = (record['cnt'] == 0)
+
+        if user['user_name'] == '':
+            message = "Name cannot be empty"
+        elif user['email'] == '':
+            message = "Email cannot be empty"
+        elif user['user_pass'] == '':
+            message = "Password cannot be empty"
+        elif not is_user_name_unique:
+            message = f"User with the name {user['user_name']} already exists"
+        elif not is_user_email_unique:
+            message = f"User with the email {user['email']} already exists"
+
+        if not message:
+            user_pass = UserPass(user['user_name'], user['user_pass'])
+            password_hash = user_pass.hash_password()
+            sql_statement = '''insert into users(name, email, password, is_active,is_admin)
+            values(?,?,?, True, False);'''
+            db.execute(sql_statement, [user['user_name'], user['email'], password_hash])
+            db.commit()
+            flash("User {} created".format(user['user_name']))
+            return redirect(url_for('users'))
+        else:
+            flash('Correct error: {}'.format(message))
+            return render_template('new_user.html', active_menu='users', user=user)
 
 
 @app.route('/init_app')
