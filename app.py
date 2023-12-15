@@ -134,7 +134,12 @@ def logout():
 
 @app.route('/users')
 def users():
-    return "not implemented"
+    db = get_db()
+    sql_command = 'select id, name, email, is_admin, is_active from users'
+    cur = db.execute(sql_command)
+    users = cur.fetchall()
+
+    return render_template('users.html', active_menu='users', users=users)
 
 
 @app.route('/new_user', methods=['GET', 'POST'])
@@ -188,6 +193,16 @@ def new_user():
         else:
             flash('Correct error: {}'.format(message))
             return render_template('new_user.html', active_menu='users', user=user)
+
+
+@app.route('/edit_user/<user_name>', methods=['GET', 'POST'])
+def edit_user(user_name):
+    return 'not implemented'
+
+
+@app.route('/delete_user/<user_name>')
+def delete_user(user_name):
+    return 'not implemented'
 
 
 @app.route('/init_app')
