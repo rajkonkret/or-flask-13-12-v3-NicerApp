@@ -202,7 +202,16 @@ def edit_user(user_name):
 
 @app.route('/delete_user/<user_name>')
 def delete_user(user_name):
-    return 'not implemented'
+    if not 'user' in session:
+        return redirect(url_for('login'))
+    login = session['user']
+
+    db = get_db()
+    sql_statement = 'delete from users where name=? and name <> ?'
+    db.execute(sql_statement, [user_name, login])
+    db.commit()
+
+    return redirect(url_for('users'))
 
 
 @app.route('/init_app')
